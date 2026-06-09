@@ -1,0 +1,25 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+.DS_Store
+
+# Generated dashboard/backtest artifacts
+regime_strategy_backtester/output/
+output/
+*_cache/
+
+# Private or licensed market data should never be committed.
+/data/
+/raw_data/
+*.zst
+*historical data*.csv
+*ES_raw*.csv
+*NQ_raw*.csv
+
+# Local notebooks and exports
+.ipynb_checkpoints/
+*.zip
