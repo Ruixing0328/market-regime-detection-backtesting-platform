@@ -10,13 +10,13 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from regime_strategy_backtester.backtesting import run_strategy_backtests
-from regime_strategy_backtester.config import OUTPUT_ROOT, NY_TZ, resolve_data_path
-from regime_strategy_backtester.data import load_futures_data
-from regime_strategy_backtester.regimes import WalkForwardConfig, detect_regimes, detect_regimes_dev
-from regime_strategy_backtester.regimes.validation import build_walk_forward_strategy_artifacts, materialize_dev_model_result
-from regime_strategy_backtester.strategies import generate_strategy_signals
-from regime_strategy_backtester.stress import run_stress_suite
+from market_regime_platform.backtesting import run_strategy_backtests
+from market_regime_platform.config import OUTPUT_ROOT, NY_TZ, resolve_data_path
+from market_regime_platform.data import load_futures_data
+from market_regime_platform.regimes import WalkForwardConfig, detect_regimes, detect_regimes_dev
+from market_regime_platform.regimes.validation import build_walk_forward_strategy_artifacts, materialize_dev_model_result
+from market_regime_platform.strategies import generate_strategy_signals
+from market_regime_platform.stress import run_stress_suite
 
 
 OUTRIGHT_PATTERNS = {
@@ -363,7 +363,7 @@ def _write_dashboard_bundle(
         "parent_run_id": run_id,
         "created_at": datetime.now().isoformat(timespec="seconds"),
         "symbol": symbol.upper(),
-        "project": "Market Regime Strategy Backtester",
+        "project": "Market Regime Detection & Backtesting Platform",
         "mode": "regime_only" if args.regime_only else "full",
         "date_window": {"start_date": start_date, "end_date": end_date, "full_history": bool(full_history)},
         "data_summary": summary_dict,
@@ -452,7 +452,7 @@ def _run_one_symbol(args: argparse.Namespace, symbol: str, run_id: str, output_r
         "run_id": run_id,
         "created_at": datetime.now().isoformat(timespec="seconds"),
         "symbol": symbol.upper(),
-        "project": "Market Regime Strategy Backtester",
+        "project": "Market Regime Detection & Backtesting Platform",
         "mode": "regime_only" if args.regime_only else "full",
         "date_window": {"start_date": start_date, "end_date": end_date, "full_history": bool(args.full_history)},
         "data_summary": data_summary.to_dict(),
@@ -702,7 +702,7 @@ def run_pipeline(args: argparse.Namespace) -> Path:
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="Run the Market Regime Strategy Backtester pipeline")
+    parser = argparse.ArgumentParser(description="Run the Market Regime Detection & Backtesting Platform pipeline")
     parser.add_argument("--symbol", choices=["ES", "NQ"], default="NQ")
     parser.add_argument("--symbols", nargs="+", choices=["ES", "NQ"], default=None)
     parser.add_argument("--data-path", default=None, help="Path to a raw 1-minute futures CSV. Required for ES because only an NQ demo file is bundled.")
@@ -751,8 +751,8 @@ def main() -> None:
     parser = build_parser()
     args = parser.parse_args()
     run_dir = run_pipeline(args)
-    print(f"Market Regime Strategy Backtester run complete: {run_dir}")
-    print("Open the dashboard with: streamlit run regime_strategy_backtester/app.py")
+    print(f"Market Regime Detection & Backtesting Platform run complete: {run_dir}")
+    print("Open the dashboard with: streamlit run market_regime_platform/app.py")
 
 
 if __name__ == "__main__":

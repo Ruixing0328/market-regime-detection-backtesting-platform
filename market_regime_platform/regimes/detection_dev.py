@@ -10,7 +10,7 @@ from sklearn.cluster import KMeans
 from sklearn.metrics import silhouette_score
 from sklearn.preprocessing import StandardScaler
 
-from regime_strategy_backtester.regimes.detection import REGIME_NAMES, RegimeResult
+from market_regime_platform.regimes.detection import REGIME_NAMES, RegimeResult
 
 
 @dataclass
@@ -470,7 +470,7 @@ def _tournament_in_sample(
                 skipped[key] = str(exc)
                 continue
             # Use the same basic heuristic score as baseline for quick iteration;
-            # OOS scoring is done in `regime_strategy_backtester.regimes.validation`.
+            # OOS scoring is done in `market_regime_platform.regimes.validation`.
             score = (
                 float(diag["silhouette_score"]) * 0.45
                 + float(diag["cluster_balance_score"]) * 0.25
@@ -544,7 +544,7 @@ def detect_regimes_dev(
 
     - `mode="in_sample"`: fast tournament on the full history (like production, but includes optional HMM competitor)
     - `mode="walk_forward"`: produces OOS labels by repeated fit-on-train → label-test.
-      The model/candidate selection for walk-forward is delegated to `regime_strategy_backtester.regimes.validation`.
+      The model/candidate selection for walk-forward is delegated to `market_regime_platform.regimes.validation`.
     """
     if n_regimes != 4:
         raise ValueError("Regime detection requires exactly four regimes")
@@ -576,7 +576,7 @@ def detect_regimes_dev(
         walk_forward = WalkForwardConfig()
 
     # Walk-forward mode is implemented in validation.py so it can score OOS and select a winner.
-    from regime_strategy_backtester.regimes.validation import walk_forward_detect_regimes
+    from market_regime_platform.regimes.validation import walk_forward_detect_regimes
 
     return walk_forward_detect_regimes(
         data=data,

@@ -49,4 +49,4 @@ def portable_path(path: str | Path) -> str:
         relative = resolved.relative_to(PACKAGE_ROOT)
     except ValueError:
         return str(candidate)
-    return str(Path("regime_strategy_backtester") / relative)
+    return str(Path("market_regime_platform") / relative)

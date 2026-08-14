@@ -7,7 +7,7 @@ from typing import Optional
 
 import pandas as pd
 
-from regime_strategy_backtester.config import CACHE_ROOT, NY_TZ, portable_path
+from market_regime_platform.config import CACHE_ROOT, NY_TZ, portable_path
 
 OUTRIGHT_PATTERNS = {
     "ES": re.compile(r"^ES[HMUZ]\d{1,2}$"),

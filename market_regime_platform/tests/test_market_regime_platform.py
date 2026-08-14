@@ -11,16 +11,16 @@ import pandas as pd
 import pytest
 from streamlit.testing.v1 import AppTest
 
-from regime_strategy_backtester.app import _mc_band_frame, _mc_local_focus_options, _sort_metric_frame, _strategy_preset_selection
-from regime_strategy_backtester.backtesting import run_strategy_backtests
-from regime_strategy_backtester.config import resolve_data_path
-from regime_strategy_backtester.data import load_futures_data
-from regime_strategy_backtester.regimes import detect_regimes
-from regime_strategy_backtester.regimes.detection import REGIME_NAMES
-from regime_strategy_backtester.pipeline import _normalize_dashboard_model_variants
-from regime_strategy_backtester.strategies import generate_strategy_signals
-from regime_strategy_backtester.stress import run_stress_suite
-from regime_strategy_backtester.viz import load_dashboard_run
+from market_regime_platform.app import _mc_band_frame, _mc_local_focus_options, _sort_metric_frame, _strategy_preset_selection
+from market_regime_platform.backtesting import run_strategy_backtests
+from market_regime_platform.config import resolve_data_path
+from market_regime_platform.data import load_futures_data
+from market_regime_platform.regimes import detect_regimes
+from market_regime_platform.regimes.detection import REGIME_NAMES
+from market_regime_platform.pipeline import _normalize_dashboard_model_variants
+from market_regime_platform.strategies import generate_strategy_signals
+from market_regime_platform.stress import run_stress_suite
+from market_regime_platform.viz import load_dashboard_run
 
 
 def _synthetic_ohlcv(rows: int = 900) -> pd.DataFrame:
@@ -286,7 +286,7 @@ def test_default_nq_demo_data_is_bundled_inside_package() -> None:
 
     assert path.exists()
     assert path.name == "NQ_1M_demo.csv"
-    assert "regime_strategy_backtester/data/demo" in path.as_posix()
+    assert "market_regime_platform/data/demo" in path.as_posix()
 
 
 def test_es_requires_explicit_data_path_when_not_bundled() -> None:
@@ -556,7 +556,7 @@ def test_mc_local_focus_options_respect_global_scope() -> None:
 
 def test_dashboard_app_renders_command_bar_and_top5_defaults(tmp_path: Path) -> None:
     _write_dashboard_run(tmp_path)
-    at = AppTest.from_file("regime_strategy_backtester/app.py").run(timeout=120)
+    at = AppTest.from_file("market_regime_platform/app.py").run(timeout=120)
     at.text_input[0].input(str(tmp_path)).run(timeout=120)
 
     assert not at.exception
@@ -651,7 +651,7 @@ def test_dashboard_app_explains_single_model_or_stress_scope_limits(tmp_path: Pa
     pd.DataFrame({"window_start": [dates[0]], "window_end": [dates[-1]], "bars": [len(dates)], "regime_0_share": [0.25], "regime_1_share": [0.25], "regime_2_share": [0.25], "regime_3_share": [0.25]}).to_csv(run_dir / "regime_stability.csv", index=False)
     pd.DataFrame({"from_regime": [0], 0: [1.0]}).to_csv(run_dir / "regime_transitions.csv", index=False)
 
-    at = AppTest.from_file("regime_strategy_backtester/app.py").run(timeout=120)
+    at = AppTest.from_file("market_regime_platform/app.py").run(timeout=120)
     at.text_input[0].input(str(tmp_path)).run(timeout=120)
 
     info_values = [widget.value for widget in at.info]
@@ -659,8 +659,8 @@ def test_dashboard_app_explains_single_model_or_stress_scope_limits(tmp_path: Pa
     assert any("only includes saved Monte Carlo artifacts" in value for value in info_values)
 
 
-def test_regime_strategy_backtester_has_no_external_repo_dependencies() -> None:
-    root = Path("regime_strategy_backtester")
+def test_market_regime_platform_has_no_external_repo_dependencies() -> None:
+    root = Path("market_regime_platform")
     substring_checks = [
         str(Path.home()),
         str(Path("Desktop") / "trading" / "quant algo"),

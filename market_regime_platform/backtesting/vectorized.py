@@ -5,7 +5,7 @@ from dataclasses import dataclass
 import numpy as np
 import pandas as pd
 
-from regime_strategy_backtester.config import DEFAULT_BARS_PER_YEAR
+from market_regime_platform.config import DEFAULT_BARS_PER_YEAR
 
 
 @dataclass

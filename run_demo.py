@@ -2,13 +2,13 @@ from __future__ import annotations
 
 import argparse
 
-from regime_strategy_backtester.config import OUTPUT_ROOT, resolve_data_path
-from regime_strategy_backtester.pipeline import build_parser, run_pipeline
+from market_regime_platform.config import OUTPUT_ROOT, resolve_data_path
+from market_regime_platform.pipeline import build_parser, run_pipeline
 
 
 def build_demo_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="Run the bundled Market Regime Strategy Backtester demo workflow")
-    parser.add_argument("--run-id", default="demo_submission")
+    parser = argparse.ArgumentParser(description="Run the bundled Market Regime Detection & Backtesting Platform demo workflow")
+    parser.add_argument("--run-id", default="public_demo")
     parser.add_argument("--sample-rows", type=int, default=5000)
     parser.add_argument("--simulations", type=int, default=20)
     parser.add_argument("--stress-horizon", type=int, default=60)
@@ -46,7 +46,7 @@ def main() -> None:
     )
     run_dir = run_pipeline(pipeline_args)
     print(f"Demo run complete: {run_dir}")
-    print("Launch the dashboard with: streamlit run regime_strategy_backtester/app.py")
+    print("Launch the dashboard with: streamlit run market_regime_platform/app.py")
 
 
 if __name__ == "__main__":

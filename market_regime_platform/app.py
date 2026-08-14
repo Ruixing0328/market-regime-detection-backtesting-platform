@@ -14,10 +14,9 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-from regime_strategy_backtester.config import OUTPUT_ROOT
-from regime_strategy_backtester.config import DEFAULT_BARS_PER_YEAR
-from regime_strategy_backtester.viz import load_dashboard_run
-from regime_strategy_backtester.backtesting.vectorized import _metrics_from_returns
+from market_regime_platform.config import DEFAULT_BARS_PER_YEAR, OUTPUT_ROOT, portable_path
+from market_regime_platform.viz import load_dashboard_run
+from market_regime_platform.backtesting.vectorized import _metrics_from_returns
 
 
 REGIME_COLORS = ["#6ee7a8", "#8ecae6", "#f2c94c", "#f47b9d"]
@@ -345,11 +344,11 @@ def _inject_styles() -> None:
         .dashboard-title {
             margin: 0;
             font-family: "Iowan Old Style", "Palatino Linotype", Georgia, serif;
-            font-size: clamp(2.4rem, 4.2vw, 4.2rem);
-            line-height: 0.95;
-            letter-spacing: -0.04em;
+            font-size: clamp(2.2rem, 2.8vw, 3.2rem);
+            line-height: 1.02;
+            letter-spacing: 0;
             color: var(--ink-strong);
-            max-width: 12ch;
+            max-width: 22ch;
         }
         .subline {
             margin: 14px 0 0;
@@ -361,11 +360,15 @@ def _inject_styles() -> None:
         .command-badges {
             display: flex;
             flex-wrap: wrap;
-            justify-content: flex-end;
+            justify-content: flex-start;
             gap: 8px;
-            max-width: 24rem;
+            max-width: none;
             position: relative;
             z-index: 1;
+        }
+        .command-header {
+            flex-direction: column;
+            align-items: flex-start;
         }
         .status-pill,
         .mode-pill,
@@ -1469,7 +1472,7 @@ def _strategy_tile_html(
     drawdown = _safe_float(row.get("max_drawdown", 0.0)) or 0.0
     return (
         f"<div class='strategy-tile{' champion' if champion else ''}'>"
-        f"<div class='strategy-kicker'>{'Champion' if champion else 'In view'}</div>"
+        f"<div class='strategy-kicker'>{'Top-ranked strategy' if champion else 'In view'}</div>"
         f"<div class='strategy-name'>{_html(_display_name(strategy))}</div>"
         f"<div class='strategy-score {score_tone}'>{_html(ranking_label)} {_html(_format_number(score))}</div>"
         "<div class='strategy-meta'>"
@@ -2193,10 +2196,10 @@ def _monte_carlo_terminal_frame(paths: pd.DataFrame, initial_capital: float) -> 
 
 
 def main() -> None:
-    st.set_page_config(page_title="Market Regime Strategy Backtester", layout="wide")
+    st.set_page_config(page_title="Market Regime Detection & Backtesting Platform", layout="wide")
     _inject_styles()
 
-    output_root = Path(st.sidebar.text_input("Output directory", str(OUTPUT_ROOT))).expanduser()
+    output_root = Path(st.sidebar.text_input("Output directory", portable_path(OUTPUT_ROOT))).expanduser()
     st.sidebar.markdown(
         """
         <div class="sidebar-note">
@@ -2247,10 +2250,10 @@ def main() -> None:
         """
         <div class="topbar">
           <div class="brand-lockup">
-            <span class="brand-badge">Performance Dashboard</span>
-            <span class="brand-copy">Regime Strategy Review Terminal</span>
+            <span class="brand-badge">Analytics Dashboard</span>
+            <span class="brand-copy">Market Regime Detection &amp; Backtesting Platform</span>
           </div>
-          <div class="topbar-note">A trading-first command center for regime-aware strategy research.</div>
+          <div class="topbar-note">Interactive decision support for regime modeling, strategy evaluation, and risk analysis.</div>
         </div>
         """,
         unsafe_allow_html=True,
@@ -2267,7 +2270,10 @@ def main() -> None:
     )
     hmm_status = active_manifest.get("hmm_status", manifest.get("hmm_status"))
     if hmm_status not in (None, "", "not_requested"):
-        st.info(str(hmm_status))
+        hmm_message = str(hmm_status)
+        if hmm_message.startswith("available_fit_success"):
+            hmm_message = "Gaussian HMM comparison is available and completed successfully for this run."
+        st.info(hmm_message)
 
     base_metrics = _augment_metrics(payload["metrics"], payload["trades"])
     price_regimes = payload["price_regimes"]
@@ -2355,7 +2361,7 @@ def main() -> None:
         format_func=lambda value: {
             "top_5": "Top 5",
             "top_3": "Top 3",
-            "champion_plus_challengers": "Champion + Challengers",
+            "champion_plus_challengers": "Strategy comparison",
             "all": "All",
         }[value],
         key=preset_key,
@@ -2541,7 +2547,10 @@ def main() -> None:
             champion_regime, champion_regime_score = best_regime_lookup.get(champion_strategy, ("", 0.0))
             shown_trades = int(filtered_metrics["num_trades"].sum()) if "num_trades" in filtered_metrics.columns else num_trades
             date_window = manifest.get("date_window", {})
-            date_note = f"{date_window.get('start_date', '')} to {date_window.get('end_date', '')}"
+            data_window = manifest.get("data_summary", {})
+            window_start = date_window.get("start_date") or data_window.get("start_date", "")
+            window_end = date_window.get("end_date") or data_window.get("end_date", "")
+            date_note = f"{window_start} to {window_end}"
             sparkline = _sparkline_svg(filtered_equity, champion_strategy)
             score_label = active_rank_metric.replace("_", " ").title()
             summary_filter = stress_summary.copy()
@@ -2552,18 +2561,18 @@ def main() -> None:
             mc_loss_value = _safe_float(summary_filter["probability_of_loss"].mean()) or 0.0 if not summary_filter.empty and "probability_of_loss" in summary_filter.columns else 0.0
             mc_tone = "good" if mc_loss_value < 0.35 else "warn" if mc_loss_value < 0.55 else "bad"
             kpis = [
-                _metric_html("Champion", champion_label, f"{ranking_label} {_format_number(champion.get(ranking_metric, 0.0))}", _tone(_safe_float(champion.get(ranking_metric, 0.0)) or 0.0)),
-                _metric_html("Total Return", _format_pct(total_return), "Champion total return", _tone(total_return)),
+                _metric_html("Top-ranked strategy", champion_label, f"{ranking_label} {_format_number(champion.get(ranking_metric, 0.0))}", _tone(_safe_float(champion.get(ranking_metric, 0.0)) or 0.0)),
+                _metric_html("Total Return", _format_pct(total_return), "Top-ranked strategy total return", _tone(total_return)),
                 _metric_html("Win Rate", _format_pct(win_rate), f"{num_trades:,} trades", _tone(win_rate - 0.5)),
                 _metric_html("Expected R", _format_number(expected_r), "Per-trade risk proxy", _tone(expected_r)),
                 _metric_html("Profit Factor", _format_number(profit_factor), "Gross profit / gross loss", _tone(profit_factor - 1.0)),
                 _metric_html("MC Loss Risk", _format_pct(mc_loss_value), "Average across selected Monte Carlo scenarios", mc_tone),
                 _metric_html("Best Regime", champion_regime or "No regime data", f"{ranking_label} {_format_number(champion_regime_score)}", "good" if champion_regime else "warn"),
-                _metric_html("Max Drawdown", _format_pct(max_drawdown), "Champion pullback", "bad" if max_drawdown < 0 else "warn"),
+                _metric_html("Max Drawdown", _format_pct(max_drawdown), "Top-ranked strategy pullback", "bad" if max_drawdown < 0 else "warn"),
                 _metric_html("Selected Trades", f"{shown_trades:,}", "Across the current comparison set", "good"),
             ]
             insights = [
-                _insight_html("Champion", f"{champion_label} owns the current {ranking_label.lower()} lead inside this scope.", _tone(_safe_float(champion.get(ranking_metric, 0.0)) or 0.0)),
+                _insight_html("Top-ranked strategy", f"{champion_label} leads the current {ranking_label.lower()} comparison inside this scope.", _tone(_safe_float(champion.get(ranking_metric, 0.0)) or 0.0)),
                 _insight_html("Model", f"{selected_model_display} is active across every tab in this view.", "good"),
                 _insight_html("Risk", f"Average Monte Carlo loss probability is {_format_pct(mc_loss_value)} for the selected comparison set.", mc_tone),
             ]
@@ -2573,12 +2582,12 @@ def main() -> None:
                   <section class="command-panel">
                     <div class="command-header">
                       <div class="command-copy">
-                        <div class="eyebrow">Performance dashboard</div>
-                        <div class="dashboard-title">Market Regime<br/>Backtester</div>
-                        <div class="subline">{_html(_format_money(pnl))} champion P&L | {_html(_format_pct(win_rate))} win rate | {_html(_format_number(expected_r))} expected R</div>
+                        <div class="eyebrow">Analytics dashboard</div>
+                        <div class="dashboard-title">Market Regime Detection &amp; Backtesting Platform</div>
+                        <div class="subline">{_html(_format_money(pnl))} top-ranked strategy P&amp;L | {_html(_format_pct(win_rate))} win rate | {_html(_format_number(expected_r))} expected R</div>
                       </div>
                       <div class="command-badges">
-                        <span class="status-pill">Champion in focus</span>
+                        <span class="status-pill">Top-ranked strategy in focus</span>
                         <span class="status-pill">{shown_trades:,} trades</span>
                         <span class="status-pill negative">MDD {_html(_format_pct(abs(max_drawdown)))}</span>
                         <span class="status-pill">{_html(selected_model_display)}</span>
@@ -2589,7 +2598,7 @@ def main() -> None:
                     <div class="kpi-grid">{''.join(kpis)}</div>
                   </section>
                   <aside class="desk-panel">
-                    <div class="eyebrow">Desk status</div>
+                    <div class="eyebrow">Analysis status</div>
                     <div class="console-title">Update console</div>
                     <span class="status-pill">Scope synced</span>
                     <div class="console-time">{_format_timestamp(manifest.get("created_at", ""))}</div>
@@ -2611,7 +2620,7 @@ def main() -> None:
             )
 
             st.markdown(
-                "<div class='section-heading'><div><p class='eyebrow'>Selection</p><h2>Champion and challengers</h2></div><p>The current comparison set starts with the best five strategies under the active ranking lens.</p></div>",
+                "<div class='section-heading'><div><p class='eyebrow'>Selection</p><h2>Strategy comparison</h2></div><p>The current comparison set starts with the best five strategies under the active ranking lens.</p></div>",
                 unsafe_allow_html=True,
             )
             _render_strategy_rail(filtered_metrics.head(5), ranking_label, ranking_metric, best_regime_lookup)

@@ -7,7 +7,7 @@ import pandas as pd
 
 
 ROOT = Path(__file__).resolve().parents[1]
-OUTPUT_PATH = ROOT / "regime_strategy_backtester" / "data" / "demo" / "NQ_1M_demo.csv"
+OUTPUT_PATH = ROOT / "market_regime_platform" / "data" / "demo" / "NQ_1M_demo.csv"
 
 
 def build_synthetic_nq_rows(minutes: int = 7_500, seed: int = 181) -> pd.DataFrame:

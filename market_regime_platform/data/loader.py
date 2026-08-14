@@ -7,8 +7,8 @@ from typing import Optional
 
 import pandas as pd
 
-from regime_strategy_backtester.config import NY_TZ, portable_path, resolve_data_path
-from regime_strategy_backtester.data.front_contract import load_front_contract_minute_series
+from market_regime_platform.config import NY_TZ, portable_path, resolve_data_path
+from market_regime_platform.data.front_contract import load_front_contract_minute_series
 
 
 OUTRIGHT_PATTERNS = {
@@ -154,7 +154,7 @@ def load_futures_data(
 
     Sample runs use a fast local raw read. Full runs use the in-package
     front-contract stitcher with an internal cache under
-    ``regime_strategy_backtester/output``.
+    ``market_regime_platform/output``.
     """
 
     symbol = symbol.upper()

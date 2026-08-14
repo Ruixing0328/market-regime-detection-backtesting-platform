@@ -6,15 +6,15 @@ from typing import Literal
 import numpy as np
 import pandas as pd
 
-from regime_strategy_backtester.backtesting.vectorized import (
+from market_regime_platform.backtesting.vectorized import (
     BacktestResult,
     _metrics_from_returns,
     _summarize_trades,
     run_strategy_backtests,
 )
-from regime_strategy_backtester.config import DEFAULT_BARS_PER_YEAR
-from regime_strategy_backtester.regimes.detection import REGIME_NAMES, RegimeResult
-from regime_strategy_backtester.regimes.detection_dev import (
+from market_regime_platform.config import DEFAULT_BARS_PER_YEAR
+from market_regime_platform.regimes.detection import REGIME_NAMES, RegimeResult
+from market_regime_platform.regimes.detection_dev import (
     WalkForwardConfig,
     _FitResult,
     _build_stats,
