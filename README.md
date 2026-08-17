@@ -1,30 +1,33 @@
 # Market Regime Detection & Backtesting Platform
 
-## Project Overview
+I built this project to explore a question I kept running into while testing trading strategies: **how much does a strategy's performance depend on the type of market it is trading in?**
 
-An end-to-end Python analytics platform for identifying changing intraday market regimes, evaluating strategy behavior across different conditions, and exploring the results through an interactive Streamlit dashboard.
+Instead of treating every market environment the same, the platform classifies intraday price data into different regimes, tests strategies across those conditions, and makes the results easier to explore through a Streamlit dashboard.
 
-The platform turns minute-level OHLCV data into interpretable trend/range and volatility regimes, compares K-Means and optional Gaussian HMM models, and evaluates 21 strategy variants with next-bar execution, transaction costs, regime-level metrics, and Monte Carlo stress tests. It supports research decisions such as which model is most robust, where a strategy performs best or fails, and how results change under different market and risk scenarios.
+The project combines **time-series feature engineering, K-Means and HMM-based regime modeling, strategy backtesting, risk analysis, and interactive visualization** in one Python workflow.
 
-## Dashboard Preview
+## Dashboard
 
 ![Analytics dashboard generated from the deterministic public demo](docs/dashboard-overview.png)
 
-*Overview, comparison controls, and principal analytics generated from the deterministic public demo.*
+*Dashboard overview generated from the deterministic public demo.*
 
-## Key Capabilities
+## What it does
 
-- Builds a multi-timeframe feature pipeline from minute OHLCV data.
-- Maps model clusters to four interpretable regimes: trend/range crossed with low/high volatility.
-- Selects K-Means candidates using robustness, separation, persistence, and interpretability diagnostics.
-- Supports optional Gaussian HMM comparison and walk-forward out-of-sample validation.
-- Evaluates seven strategy families as baseline, regime-aware, and liquidity-filtered variants.
-- Runs no-lookahead vectorized backtests with next-bar execution and configurable transaction costs.
-- Reports trade, expectancy, Sharpe, Sortino, drawdown, VaR/CVaR, and per-regime metrics.
-- Stress-tests return streams with GBM, regime-mixture, and block-bootstrap Monte Carlo scenarios.
-- Writes portable artifacts for an interactive Streamlit analysis and decision-support workflow.
+Starting with minute-level OHLCV data, the platform:
 
-## How It Works / Architecture
+- builds features across multiple timeframes;
+- maps market behavior into four trend/range and volatility regimes;
+- compares K-Means configurations and optionally Gaussian HMM models;
+- evaluates seven strategy families across baseline, regime-aware, and liquidity-filtered versions;
+- uses next-bar execution and configurable transaction costs in backtests;
+- calculates performance and risk metrics overall and by regime;
+- runs Monte Carlo stress tests using several simulation methods;
+- saves the results so they can be explored in the Streamlit dashboard.
+
+In total, the framework evaluates **21 strategy configurations**.
+
+## How it works
 
 ```mermaid
 flowchart LR
@@ -35,48 +38,99 @@ flowchart LR
     E --> F["Dashboard and artifacts"]
 ```
 
-The pipeline separates data preparation, regime modeling, strategy generation, execution, evaluation, and presentation. A run produces a self-contained artifact bundle that the dashboard can load without rerunning the research pipeline.
+I kept the main parts of the workflow separate so the feature pipeline, regime models, strategies, backtests, and dashboard can be changed or evaluated independently.
 
-## Market Regime Modeling
+A completed run generates the files needed by the dashboard, so the results can be reopened without rerunning the full research pipeline.
 
-The feature pipeline combines returns, realized volatility, trend strength, price-range structure, and volume/liquidity context across short and longer windows. Candidate K-Means configurations are scored for cluster separation, label stability, persistence, balance, and economic interpretability before the highest-ranked model is selected.
+## Market regime modeling
 
-Clusters are mapped to four human-readable market states rather than exposed as arbitrary numeric labels. The development workflow can also compare Gaussian HMM candidates and evaluate model selection through walk-forward, out-of-sample blocks.
+The feature pipeline uses returns, realized volatility, trend strength, price-range behavior, and volume/liquidity information across short and longer timeframes.
+
+K-Means candidates are compared using measures such as cluster separation, stability, persistence, balance, and how clearly the resulting clusters map to recognizable market behavior.
+
+The selected clusters are then translated into four easier-to-understand market states based on:
+
+- trend vs. range behavior;
+- lower vs. higher volatility.
+
+The project also supports Gaussian HMM comparison and walk-forward out-of-sample evaluation.
 
 ![Regime diagnostics generated from the deterministic public demo](docs/regime-analysis.png)
 
 *Regime visualization and model diagnostics generated from the deterministic public demo.*
 
-## Strategy Evaluation and Backtesting
+## Strategy evaluation and backtesting
 
-Seven strategy families are included: moving-average crossover, Donchian breakout, RSI mean reversion, z-score mean reversion, random forest, logistic regression, and gradient boosting. Each is evaluated as a baseline, regime-aware, and liquidity-filtered variant for 21 comparable strategy configurations.
+The project includes seven strategy families:
 
-Signals are shifted to the next bar before returns are calculated, preventing same-bar lookahead. Turnover-based transaction costs are deducted from every strategy, while trade logs and performance metrics are calculated both overall and by regime. Optional walk-forward artifacts preserve train/test boundaries for out-of-sample model and strategy review.
+- Moving Average Crossover
+- Donchian Breakout
+- RSI Mean Reversion
+- Z-Score Mean Reversion
+- Random Forest
+- Logistic Regression
+- Gradient Boosting
 
-## Example Demo Outputs
+Each strategy is tested in three versions:
 
-Running the bundled workflow writes `market_regime_platform/output/public_demo/` with inspectable CSV and JSON artifacts, including:
+1. baseline;
+2. regime-aware;
+3. liquidity-filtered.
 
-- regime labels, features, transitions, stability, diagnostics, and model metadata;
-- strategy signals, returns, equity curves, trades, and overall/per-regime metrics;
-- Monte Carlo paths and stress summaries;
-- a manifest that records data scope, parameters, costs, selected models, and generated files.
+This produces **21 comparable strategy configurations**.
 
-The README does not present synthetic return statistics as investment results. The bundled run exists to demonstrate the complete analytics workflow and dashboard behavior.
+Signals are shifted to the next bar before returns are calculated to avoid same-bar lookahead. Transaction costs are deducted based on turnover, and performance is measured both overall and within individual market regimes.
 
-## Tech Stack
+The framework also supports walk-forward outputs that preserve train/test boundaries for out-of-sample review.
+
+## Performance and risk analysis
+
+The backtesting layer calculates metrics including:
+
+- trade-level results;
+- expectancy;
+- Sharpe and Sortino ratios;
+- drawdown;
+- VaR and CVaR;
+- equity curves;
+- performance by market regime.
+
+I also included Monte Carlo stress testing because I wanted to look beyond a single historical equity curve and see how results might change under different return sequences and market environments.
+
+Supported simulation approaches include:
+
+- Geometric Brownian Motion;
+- regime-mixture simulation;
+- block-bootstrap simulation.
+
+## Demo outputs
+
+Running the bundled workflow writes results to:
+
+`market_regime_platform/output/public_demo/`
+
+The output includes:
+
+- regime labels, features, transitions, stability diagnostics, and model metadata;
+- strategy signals, returns, equity curves, trades, and performance metrics;
+- Monte Carlo paths and stress-test summaries;
+- a run manifest containing the data scope, parameters, transaction-cost assumptions, selected models, and generated files.
+
+The bundled run is meant to demonstrate how the full pipeline and dashboard work. Any performance shown in the public demo comes from synthetic data and should not be interpreted as real trading results.
+
+## Tech stack
 
 | Area | Tools |
 | --- | --- |
 | Data and time series | Python, pandas, NumPy |
-| Machine learning | scikit-learn K-Means, random forest, logistic regression, gradient boosting; optional `hmmlearn` Gaussian HMM |
+| Machine learning | scikit-learn, K-Means, Random Forest, Logistic Regression, Gradient Boosting, optional `hmmlearn` Gaussian HMM |
 | Backtesting and risk | Vectorized next-bar execution, transaction costs, VaR/CVaR, Monte Carlo simulation |
-| Application | Streamlit, Plotly |
-| Quality | pytest |
+| Dashboard | Streamlit, Plotly |
+| Testing | pytest |
 
-Python 3.10+ is required; Python 3.11 or newer is recommended.
+Python 3.10+ is required. Python 3.11 or newer is recommended.
 
-## Quickstart
+## Running it locally
 
 From the repository root:
 
@@ -89,9 +143,15 @@ python run_demo.py
 streamlit run market_regime_platform/app.py
 ```
 
-The deterministic demo writes to `market_regime_platform/output/public_demo/`, which the dashboard discovers automatically.
+The demo writes its output to:
 
-To run the pipeline directly with your own intraday ES or NQ CSV:
+```text
+market_regime_platform/output/public_demo/
+```
+
+The dashboard discovers this run automatically.
+
+You can also run the pipeline using your own intraday ES or NQ CSV:
 
 ```bash
 python -m market_regime_platform.pipeline \
@@ -100,22 +160,46 @@ python -m market_regime_platform.pipeline \
   --run-id my_research_run
 ```
 
-Expected raw columns are `ts_event`, `open`, `high`, `low`, `close`, `volume`, and `symbol`.
+Expected columns are:
+
+`ts_event`, `open`, `high`, `low`, `close`, `volume`, and `symbol`.
 
 ## Testing
+
+Run the test suite with:
 
 ```bash
 python -m pytest
 ```
 
-The 19-test suite covers data loading, regime labeling, strategy variants, next-bar execution, stress outputs, dashboard artifact loading, and Streamlit smoke rendering.
+The current suite contains **19 tests** covering:
 
-## Demo Data and Provenance
+- data loading;
+- regime labeling;
+- strategy variants;
+- next-bar execution;
+- stress-test outputs;
+- dashboard artifact loading;
+- Streamlit smoke rendering.
 
-> The public demo uses deterministic synthetic futures-style OHLCV data so the repository is reproducible and safe to distribute. It demonstrates the same intraday processing, modeling, and evaluation pipeline without including the original research data or licensed market data.
+## Public demo data
 
-The bundled dataset can be regenerated with `python scripts/generate_synthetic_demo_data.py`. The seed and generation process are kept in source control so the demo is reproducible.
+The public version uses a deterministic synthetic futures-style OHLCV dataset so the project can be run without distributing the original project data.
 
-## Limitations and Disclaimer
+The synthetic dataset goes through the same feature engineering, regime modeling, strategy evaluation, backtesting, and dashboard workflow as the original dataset.
 
-This is a research and portfolio demonstration, not an execution system or investment product. Results are sensitive to feature windows, modeling choices, transaction-cost assumptions, market microstructure, and dataset scope. Nothing in this repository is investment advice.
+It can be regenerated with:
+
+```bash
+python scripts/generate_synthetic_demo_data.py
+```
+
+The generation process and random seed are kept in the repository so the demo is reproducible.
+
+## Notes
+
+This project is meant for research and portfolio demonstration.
+
+Backtest results depend heavily on the dataset, feature definitions, model settings, transaction-cost assumptions, and market period being tested.
+
+It is not a live execution system, trading product, or investment advice.
