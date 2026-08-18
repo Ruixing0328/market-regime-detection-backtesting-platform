@@ -21,6 +21,7 @@ Starting with minute-level OHLCV data, the platform:
 - builds features across multiple timeframes;
 - maps market behavior into four trend/range and volatility regimes;
 - compares K-Means configurations and optionally Gaussian HMM models;
+- supports walk-forward out-of-sample (OOS) validation to evaluate model and strategy behavior beyond the training period;
 - evaluates seven strategy families across baseline, regime-aware, and liquidity-filtered versions;
 - uses next-bar execution and configurable transaction costs in backtests;
 - calculates performance and risk metrics overall and by regime;
