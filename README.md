@@ -6,11 +6,13 @@ Instead of treating every market environment the same, the platform classifies i
 
 The project combines **time-series feature engineering, K-Means and HMM-based regime modeling, strategy backtesting, risk analysis, and interactive visualization** in one Python workflow.
 
-## Dashboard
+## Regime detection example
 
-![Analytics dashboard generated from the deterministic public demo](docs/dashboard-overview.png)
+![Detected market regimes overlaid on historical NQ price data](docs/regime-timeline-historical.png)
 
-*Dashboard overview generated from the deterministic public demo.*
+*Detected regimes overlaid on the project's historical NQ dataset.*
+
+This is a derived visualization from the original research dataset; the raw historical data is not included, and the runnable public demo remains deterministic and synthetic.
 
 ## What it does
 
@@ -55,9 +57,9 @@ The selected clusters are then translated into four easier-to-understand market 
 
 The project also supports Gaussian HMM comparison and walk-forward out-of-sample evaluation.
 
-![Regime diagnostics generated from the deterministic public demo](docs/regime-analysis.png)
+![Market regime transition probability matrix](docs/regime-transition-matrix-historical.png)
 
-*Regime visualization and model diagnostics generated from the deterministic public demo.*
+*Transition probabilities between the four detected market regimes.*
 
 ## Strategy evaluation and backtesting
 
@@ -102,6 +104,14 @@ Supported simulation approaches include:
 - Geometric Brownian Motion;
 - regime-mixture simulation;
 - block-bootstrap simulation.
+
+## Dashboard
+
+The Streamlit dashboard provides an interactive interface for comparing models, strategies, regimes, and generated artifacts from a completed run.
+
+![Analytics dashboard generated from the deterministic public demo](docs/dashboard-overview.png)
+
+*Dashboard overview generated from the deterministic public demo.*
 
 ## Demo outputs
 
@@ -187,6 +197,8 @@ The current suite contains **19 tests** covering:
 The public version uses a deterministic synthetic futures-style OHLCV dataset so the project can be run without distributing the original project data.
 
 The synthetic dataset goes through the same feature engineering, regime modeling, strategy evaluation, backtesting, and dashboard workflow as the original dataset.
+
+The historical figures in this README are derived outputs only; the bundled runnable dataset remains synthetic.
 
 It can be regenerated with:
 
